@@ -1,128 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Inventory - Ledgriq</title>
-	<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - Ledgriq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>::-webkit-scrollbar { display: none; }</style>
 </head>
+<body class="bg-slate-50 flex h-screen font-sans text-slate-800 antialiased">
 
-<body class="bg-gray-100 flex h-screen font-sans text-gray-800">
+    <aside class="w-64 bg-gradient-to-b from-slate-900 to-indigo-950 text-slate-300 hidden md:flex flex-col shadow-2xl z-20 border-r border-indigo-900/50">
+        <div class="p-6">
+            <h1 class="text-3xl font-black tracking-tight text-white drop-shadow-md">Ledgriq<span class="text-indigo-500">.</span></h1>
+            <p class="text-indigo-300 text-xs font-medium mt-1 uppercase tracking-widest truncate">{{ shop_name }}</p>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 mt-6">
+            <a href="/dashboard" class="block px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all">Dashboard</a>
+            <a href="/inventory" class="block px-4 py-3 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-xl font-semibold shadow-inner transition-all">Inventory</a>
+            <a href="/pos" class="block px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all">POS Terminal</a>
+            <a href="/customers" class="block px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all">Customers</a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <a href="/logout" class="block w-full text-center px-4 py-2 text-red-400 hover:text-white hover:bg-red-500/20 rounded-xl font-medium transition-all text-sm">Sign Out</a>
+        </div>
+    </aside>
 
-	<aside class="w-64 bg-blue-900 text-white flex flex-col hidden md:flex shadow-xl z-20">
-		<div class="p-6">
-			<h1 class="text-3xl font-extrabold tracking-tight">Ledgriq.</h1>
-			<p class="text-blue-300 text-sm mt-1 truncate">{{ shop_name }}</p>
-		</div>
-		<nav class="flex-1 px-4 space-y-2 mt-4">
-			<a href="/dashboard"
-				class="block px-4 py-3 hover:bg-blue-800 rounded-lg transition">Dashboard</a>
-			<a href="/inventory"
-				class="block px-4 py-3 bg-blue-800 rounded-lg font-medium shadow">Inventory</a>
-			<a href="/pos" class="block px-4 py-3 hover:bg-blue-800 rounded-lg transition">POS Terminal</a>
-			<a href="/customers"
-				class="block px-4 py-3 hover:bg-blue-800 rounded-lg transition">Customers</a>
-		</nav>
-		<div class="p-4 border-t border-blue-800">
-			<a href="/logout"
-				class="block w-full text-center px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition text-sm">Logout</a>
-		</div>
-	</aside>
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto mb-20 md:mb-0">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight mb-6">Inventory Management</h2>
 
-	<main class="flex-1 p-8 overflow-y-auto">
-		<h2 class="text-2xl font-bold text-gray-900 mb-6">Inventory Management</h2>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-6 mb-8">
+            <h3 class="text-lg font-bold text-slate-900 mb-4">Add New Product</h3>
+            <form action="/inventory" method="POST" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div class="md:col-span-2">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Product Name</label>
+                    <input type="text" name="name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm font-medium">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">SKU / Barcode</label>
+                    <input type="text" name="sku" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm font-medium">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
+                    <input type="number" step="0.01" name="price" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm font-medium">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Initial Stock</label>
+                    <input type="number" name="stock" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm font-medium">
+                </div>
+                <div class="md:col-span-5 flex justify-end mt-2">
+                    <button type="submit" class="w-full md:w-auto bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-bold py-2.5 px-6 rounded-xl shadow-md hover:shadow-indigo-500/30 transition-all">Save Product</button>
+                </div>
+            </form>
+        </div>
 
-		<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-			<h3 class="text-lg font-bold text-gray-900 mb-4">Add New Product</h3>
-			<form action="/inventory" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-				<div>
-					<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Product
-						Name</label>
-					<input type="text" name="name" required
-						class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900">
-				</div>
-				<div>
-					<label class="block text-xs font-bold text-gray-500 uppercase mb-1">SKU /
-						Barcode</label>
-					<input type="text" name="sku"
-						class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900">
-				</div>
-				<div>
-					<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Price
-						(₹)</label>
-					<input type="number" step="0.01" name="price" required
-						class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900">
-				</div>
-				<div>
-					<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Initial
-						Stock</label>
-					<input type="number" name="stock"
-						class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-900">
-				</div>
-				<div class="md:col-span-4 flex justify-end mt-2">
-					<button type="submit"
-						class="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg transition">Save
-						Product</button>
-				</div>
-			</form>
-		</div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead class="bg-slate-50/50">
+                    <tr>
+                        <th class="px-4 md:px-6 py-4 text-left text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Product Name</th>
+                        <th class="px-4 md:px-6 py-4 text-left text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Price</th>
+                        <th class="px-4 md:px-6 py-4 text-left text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Stock</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-slate-50">
+                    {% if products %}
+                        {% for product in products %}
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-4 md:px-6 py-4 font-bold text-slate-900 text-sm">
+                                {{ product.name }}<br>
+                                <span class="text-[10px] text-slate-400 font-medium">{{ product.sku }}</span>
+                            </td>
+                            <td class="px-4 md:px-6 py-4 font-bold text-indigo-600 text-sm">₹{{ "%.2f"|format(product.price) }}</td>
+                            <td class="px-4 md:px-6 py-4 text-xs">
+                                {% if product.stock_quantity > 10 %}
+                                    <span class="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-md">{{ product.stock_quantity }}</span>
+                                {% elif product.stock_quantity > 0 %}
+                                    <span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-md">{{ product.stock_quantity }}</span>
+                                {% else %}
+                                    <span class="bg-rose-100 text-rose-800 font-bold px-2.5 py-1 rounded-md">Empty</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="3" class="px-4 py-12 text-center text-slate-400 font-medium text-sm">No products in inventory yet.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </main>
 
-		<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50">
-					<tr>
-						<th
-							class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
-							Product Name</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
-							SKU</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
-							Price</th>
-						<th
-							class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
-							Stock</th>
-					</tr>
-				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
-					{% if products %}
-					{% for product in products %}
-					<tr class="hover:bg-gray-50 transition">
-						<td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{
-							product.name }}</td>
-						<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{
-							product.sku }}</td>
-						<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{{
-							"%.2f"|format(product.price) }}</td>
-						<td class="px-6 py-4 whitespace-nowrap text-sm">
-							{% if product.stock_quantity > 10 %}
-							<span
-								class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">{{
-								product.stock_quantity }} in stock</span>
-							{% elif product.stock_quantity > 0 %}
-							<span
-								class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">Low:
-								{{ product.stock_quantity }} left</span>
-							{% else %}
-							<span
-								class="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">Out
-								of Stock</span>
-							{% endif %}
-						</td>
-					</tr>
-					{% endfor %}
-					{% else %}
-					<tr>
-						<td colspan="4" class="px-6 py-12 text-center text-gray-400 italic">No
-							products in inventory yet.</td>
-					</tr>
-					{% endif %}
-				</tbody>
-			</table>
-		</div>
-	</main>
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center pt-2 pb-5 px-2 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] z-50">
+        <a href="/dashboard" class="flex flex-col items-center text-slate-400 hover:text-indigo-600"><span class="text-xl mb-0.5">📊</span><span class="text-[10px] font-bold">Dash</span></a>
+        <a href="/inventory" class="flex flex-col items-center text-indigo-600"><span class="text-xl mb-0.5">📦</span><span class="text-[10px] font-bold">Stock</span></a>
+        <a href="/pos" class="flex flex-col items-center relative -top-5">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white h-14 w-14 flex items-center justify-center rounded-full shadow-lg shadow-indigo-500/40"><span class="text-2xl">💳</span></div>
+            <span class="text-[10px] font-bold mt-1 text-slate-600">Sell</span>
+        </a>
+        <a href="/customers" class="flex flex-col items-center text-slate-400 hover:text-indigo-600"><span class="text-xl mb-0.5">👥</span><span class="text-[10px] font-bold">Clients</span></a>
+    </nav>
 </body>
-
 </html>
