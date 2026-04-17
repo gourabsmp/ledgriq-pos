@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Invoice Generator - Ledgriq</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+	<style>
+		/* Ensures the A4 size is respected when generating the PDF */
+		@media print {
+			body {
+				background-color: white;
+			}
+
+			.no-print {
+				display: none;
+			}
+
+			#invoice-paper {
+				box-shadow: none;
+				margin: 0;
+				padding: 0;
+				width: 100%;
+			}
+		}
+	</style>
+</head>
+
+<body class="bg-gray-200 flex h-screen font-sans text-gray-800 overflow-hidden">
+
+	<aside class="w-64 bg-blue-900 text-white flex flex-col hidden md:flex no-print z-10 shadow-xl">
+		<div class="p-6">
+			<h1 class="text-3xl font-extrabold tracking-tight">Ledgriq.</h1>
+			<p class="text-blue-300 text-sm mt-1 truncate">Wholesale Generator</p>
+		</div>
+		<nav class="flex-1 px-4 space-y-2 mt-4">
+			<a href="/dashboard"
+				class="block px-4 py-3 hover:bg-blue-800 rounded-lg transition">Dashboard</a>
+			<a href="/inventory"
+				class="block px-4 py-3 hover:bg-blue-800 rounded-lg transition">Inventory</a>
+			<a href="/invoices" class="block px-4 py-3 bg-blue-800 rounded-lg font-medium shadow">Invoice
+				Generator</a>
+		</nav>
+		<div class="p-4">
+			<a href="/logout"
+				class="block w-full text-center px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg font-medium transition">Logout</a>
+		</div>
+	</aside>
+
+	<div class="w-96 bg-white border-r border-gray-300 flex flex-col no-print h-full overflow-y-auto z-0 shadow-lg">
+		<div class="p-5 border-b border-gray-200 bg-gray-50">
+			<h2 class="text-xl font-bold text-gray-800">Invoice Controls</h2>
+			<p class="text-xs text-gray-500">Edit fields to update the preview instantly.</p>
+		</div>
+
+		<div class="p-5 space-y-6">
+			<div class="space-y-3">
+				<h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider border-b pb-1">1.
+					Shop Details</h3>
+				<input type="text" id="in-shop-name" value="MAA KALI ALU BHANDAR"
+					onkeyup="updateInvoice()" class="w-full p-2 text-sm border rounded">
+				<input type="text" id="in-shop-prop" value="Proprietor: Samir Singha Mahapatra"
+					onkeyup="updateInvoice()" class="w-full p-2 text-sm border rounded">
+				<input type="text" id="in-shop-addr" value="Simlapal, Bankura, 722151, West Bengal"
+					onkeyup="updateInvoice()" class="w-full p-2 text-sm border rounded">
+				<input type="text" id="in-shop-phone" value="Ph: +91 9876543210"
+					onkeyup="updateInvoice()" class="w-full p-2 text-sm border rounded">
+			</div>
+
+			<div class="space-y-3">
+				<h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider border-b pb-1">2.
+					Customer Info</h3>
+				<input type="date" id="in-date" onchange="updateInvoice()"
+					class="w-full p-2 text-sm border rounded">
+				<input type="text" id="in-customer" placeholder="Customer Name & Location"
+					value="Suman (Simlapal)" onkeyup="updateInvoice()"
+					class="w-full p-2 text-sm border rounded">
+			</div>
+
+			<div class="space-y-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+				<h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider">3. Add Custom Item
+				</h3>
+				<input type="date" id="add-date" class="w-full p-2 text-sm border rounded bg-white">
+				<input type="text" id="add-desc" placeholder="Description (e.g. Potato - Jyoti)"
+					class="w-full p-2 text-sm border rounded bg-white">
+				<div class="flex gap-2">
+					<input type="number" id="add-qty" placeholder="Qty (Bags)"
+						class="w-1/2 p-2 text-sm border rounded bg-white">
+					<input type="number" id="add-rate" placeholder="Rate/Bag"
+						class="w-1/2 p-2 text-sm border rounded bg-white">
+				</div>
+				<button onclick="addItem()"
+					class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded shadow transition text-sm">
+					+ Add to Statement
+				</button>
+			</div>
+
+			<div class="space-y-3">
+				<h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider border-b pb-1">4.
+					Ledger Math</h3>
+				<div>
+					<label class="text-xs text-gray-600">Previous Due (Rs)</label>
+					<input type="number" id="in-prev-due" value="0" onkeyup="updateInvoice()"
+						onchange="updateInvoice()"
+						class="w-full p-2 text-sm border rounded font-bold text-red-600">
+				</div>
+				<div>
+					<label class="text-xs text-gray-600">Payment Received Today (Rs)</label>
+					<input type="number" id="in-payment" value="0" onkeyup="updateInvoice()"
+						onchange="updateInvoice()"
+						class="w-full p-2 text-sm border rounded font-bold text-green-600">
+				</div>
+			</div>
+
+			<button onclick="generatePDF()"
+				class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-lg transition uppercase tracking-wider">
+				Download PDF
+			</button>
+		</div>
+	</div>
+
+	<div class="flex-1 overflow-y-auto p-10 flex justify-center bg-gray-300">
+
+		<div id="invoice-paper" class="bg-white text-black p-12 shadow-2xl relative"
+			style="width: 210mm; min-height: 297mm; max-height: max-content;">
+
+			<div class="text-center border-b-[3px] border-black pb-4 mb-6">
+				<h1 id="out-shop-name"
+					class="text-4xl font-extrabold uppercase tracking-tight text-gray-900">MAA KALI
+					ALU BHANDAR</h1>
+				<p id="out-shop-prop" class="text-lg font-bold text-gray-800 mt-1">Proprietor: Samir
+					Singha Mahapatra</p>
+				<p id="out-shop-addr" class="text-md text-gray-700">Simlapal, Bankura, 722151, West
+					Bengal</p>
+				<p id="out-shop-phone" class="text-md text-gray-700 font-medium">Ph: +91 9876543210</p>
+
+				<h2 class="text-2xl font-bold mt-6 tracking-widest uppercase">Statement of Account</h2>
+			</div>
+
+			<div class="flex justify-between font-bold text-gray-800 mb-6">
+				<p>Date Generated: <span id="out-date" class="font-normal"></span></p>
+				<p>Customer: <span id="out-customer" class="font-normal">Suman (Simlapal)</span></p>
+			</div>
+
+			<table class="w-full mb-8 border-collapse">
+				<thead>
+					<tr class="bg-gray-100 border-y-2 border-gray-800">
+						<th class="p-2 text-left text-sm font-bold w-24">Date</th>
+						<th class="p-2 text-left text-sm font-bold">Description</th>
+						<th class="p-2 text-right text-sm font-bold w-24">Qty(Bags)</th>
+						<th class="p-2 text-right text-sm font-bold w-28">Rate/Bag</th>
+						<th class="p-2 text-right text-sm font-bold w-32">Amount (Rs)</th>
+					</tr>
+				</thead>
+				<tbody id="items-tbody" class="border-b-2 border-gray-800">
+				</tbody>
+			</table>
+
+			<h3 class="text-lg font-bold text-gray-900 mb-2 uppercase tracking-wide">Customer Payment
+				History</h3>
+			<table class="w-full mb-8 border-collapse">
+				<thead>
+					<tr class="bg-gray-100 border-y-2 border-gray-800">
+						<th class="p-2 text-left text-sm font-bold w-24">Date</th>
+						<th class="p-2 text-left text-sm font-bold">Description</th>
+						<th class="p-2 text-right text-sm font-bold w-48">Amount Paid (Rs)</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr id="payment-row" class="border-b border-gray-300 hidden">
+						<td class="p-2 text-sm" id="out-payment-date"></td>
+						<td class="p-2 text-sm">Payment Received</td>
+						<td class="p-2 text-sm text-right font-bold text-green-700"
+							id="out-payment-amount"></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div class="flex justify-end mt-8">
+				<div class="w-1/2 space-y-2">
+					<div class="flex justify-between text-md">
+						<span class="font-bold text-gray-600">Previous Due:</span>
+						<span id="out-prev-due">Rs 0.00</span>
+					</div>
+					<div class="flex justify-between text-md">
+						<span class="font-bold text-gray-600">Current Bills:</span>
+						<span id="out-subtotal">Rs 0.00</span>
+					</div>
+					<div
+						class="flex justify-between text-lg font-bold border-t border-gray-300 pt-2">
+						<span>Total of All Bills:</span>
+						<span id="out-total-bills">Rs 0.00</span>
+					</div>
+					<div class="flex justify-between text-lg font-bold text-green-700">
+						<span>Total of All Payments:</span>
+						<span id="out-total-payments">- Rs 0.00</span>
+					</div>
+					<div
+						class="flex justify-between text-xl font-extrabold text-red-600 border-t-4 border-double border-red-200 pt-2 mt-2">
+						<span>TOTAL DUE:</span>
+						<span id="out-final-due">Rs 0.00</span>
+					</div>
+				</div>
+			</div>
+
+			<div class="absolute bottom-12 right-12 text-center">
+				<div class="w-48 border-t border-gray-800 pt-2 font-bold text-gray-700">
+					Authorized Signature
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script>
+		// Set today's date automatically
+		document.getElementById('in-date').valueAsDate = new Date();
+		document.getElementById('add-date').valueAsDate = new Date();
+
+		let items = [];
+
+		function addItem() {
+			let date = document.getElementById('add-date').value;
+			let desc = document.getElementById('add-desc').value;
+			let qty = parseFloat(document.getElementById('add-qty').value) || 0;
+			let rate = parseFloat(document.getElementById('add-rate').value) || 0;
+
+			if (!desc) return alert("Please enter a description");
+
+			items.push({
+				date: date.split('-').reverse().join('-'), // format DD-MM-YYYY
+				desc: desc,
+				qty: qty,
+				rate: rate,
+				amount: qty * rate
+			});
+
+			// Clear inputs
+			document.getElementById('add-desc').value = '';
+			document.getElementById('add-qty').value = '';
+			document.getElementById('add-rate').value = '';
+
+			updateInvoice();
+		}
+
+		function updateInvoice() {
+			// 1. Sync Shop & Customer Texts
+			document.getElementById('out-shop-name').innerText = document.getElementById('in-shop-name').value;
+			document.getElementById('out-shop-prop').innerText = document.getElementById('in-shop-prop').value;
+			document.getElementById('out-shop-addr').innerText = document.getElementById('in-shop-addr').value;
+			document.getElementById('out-shop-phone').innerText = document.getElementById('in-shop-phone').value;
+
+			let generatedDate = document.getElementById('in-date').value.split('-').reverse().join('-');
+			document.getElementById('out-date').innerText = generatedDate;
+			document.getElementById('out-customer').innerText = document.getElementById('in-customer').value || "Walk-in";
+
+			// 2. Render Items Table
+			let tbody = document.getElementById('items-tbody');
+			tbody.innerHTML = '';
+			let currentBillsTotal = 0;
+
+			if (items.length === 0) {
+				tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">No items added yet.</td></tr>`;
+			} else {
+				items.forEach(item => {
+					currentBillsTotal += item.amount;
+					tbody.innerHTML += `
+                        <tr class="border-b border-gray-200">
+                            <td class="p-2 text-sm">${item.date}</td>
+                            <td class="p-2 text-sm font-medium">${item.desc}</td>
+                            <td class="p-2 text-sm text-right">${item.qty.toFixed(2)}</td>
+                            <td class="p-2 text-sm text-right">${item.rate.toFixed(2)}</td>
+                            <td class="p-2 text-sm text-right font-bold">${item.amount.toFixed(2)}</td>
+                        </tr>
+                    `;
+				});
+			}
+
+			// 3. Render Payment Row
+			let payment = parseFloat(document.getElementById('in-payment').value) || 0;
+			let paymentRow = document.getElementById('payment-row');
+			if (payment > 0) {
+				paymentRow.classList.remove('hidden');
+				document.getElementById('out-payment-date').innerText = generatedDate;
+				document.getElementById('out-payment-amount').innerText = payment.toFixed(2);
+			} else {
+				paymentRow.classList.add('hidden');
+			}
+
+			// 4. Ledger Math
+			let prevDue = parseFloat(document.getElementById('in-prev-due').value) || 0;
+			let totalAllBills = prevDue + currentBillsTotal;
+			let finalDue = totalAllBills - payment;
+
+			// Render Math
+			document.getElementById('out-prev-due').innerText = 'Rs ' + prevDue.toFixed(2);
+			document.getElementById('out-subtotal').innerText = 'Rs ' + currentBillsTotal.toFixed(2);
+			document.getElementById('out-total-bills').innerText = 'Rs ' + totalAllBills.toFixed(2);
+			document.getElementById('out-total-payments').innerText = '- Rs ' + payment.toFixed(2);
+			document.getElementById('out-final-due').innerText = 'Rs ' + finalDue.toFixed(2);
+		}
+
+		// Initialize view
+		updateInvoice();
+
+		// PDF Generation
+		function generatePDF() {
+			const paper = document.getElementById('invoice-paper');
+			const custName = document.getElementById('in-customer').value.split(' ')[0] || "Statement";
+			const date = document.getElementById('in-date').value;
+
+			var opt = {
+				margin: 0,
+				filename: `Statement_${custName}_${date}.pdf`,
+				image: { type: 'jpeg', quality: 1 },
+				html2canvas: { scale: 2, useCORS: true },
+				jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+			};
+
+			html2pdf().set(opt).from(paper).save();
+		}
+	</script>
+</body>
+
+</html>
