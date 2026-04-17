@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Ledgriq Dashboard</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<style>
+		/* Custom scrollbar for a cleaner look */
+		::-webkit-scrollbar {
+			width: 6px;
+			height: 6px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: #cbd5e1;
+			border-radius: 10px;
+		}
+
+		::-webkit-scrollbar-thumb:hover {
+			background: #94a3b8;
+		}
+	</style>
+</head>
+
+<body
+	class="bg-slate-50 flex h-screen font-sans text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+	<aside
+		class="w-64 bg-gradient-to-b from-slate-900 to-indigo-950 text-slate-300 flex flex-col hidden md:flex shadow-2xl z-20 border-r border-indigo-900/50">
+		<div class="p-6">
+			<h1 class="text-3xl font-black tracking-tight text-white drop-shadow-md">Ledgriq<span
+					class="text-indigo-500">.</span></h1>
+			<p class="text-indigo-300 text-xs font-medium mt-1 uppercase tracking-widest truncate">{{
+				shop_name }}</p>
+		</div>
+		<nav class="flex-1 px-4 space-y-2 mt-6">
+			<a href="/dashboard"
+				class="block px-4 py-3 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-xl font-semibold shadow-inner transition-all">Dashboard</a>
+			<a href="/inventory"
+				class="block px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200">Inventory</a>
+			<a href="/pos"
+				class="block px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200">POS
+				Terminal</a>
+			<a href="/customers"
+				class="block px-4 py-3 hover:bg-white/5 hover:text-white rounded-xl transition-all duration-200">Customers</a>
+		</nav>
+		<div class="p-4 border-t border-white/10">
+			<a href="/logout"
+				class="block w-full text-center px-4 py-2 text-red-400 hover:text-white hover:bg-red-500/20 border border-transparent hover:border-red-500/50 rounded-xl font-medium transition-all duration-200 text-sm">Sign
+				Out</a>
+		</div>
+	</aside>
+
+	<main class="flex-1 p-8 overflow-y-auto">
+		<header class="flex justify-between items-center mb-10">
+			<div>
+				<h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome back, {{
+					shop_name }}</h2>
+				<p class="text-slate-500 mt-1 font-medium">Here is your business overview for today.</p>
+			</div>
+
+			<a href="/pos"
+				class="group relative inline-flex items-center justify-center px-8 py-3 font-bold text-white transition-all duration-200 bg-gradient-to-r from-indigo-600 to-blue-500 font-pj rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/30 active:scale-95">
+				<span
+					class="mr-2 text-xl leading-none transition-transform group-hover:rotate-90">+</span>
+				New Sale
+			</a>
+		</header>
+
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+			<div
+				class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 md:col-span-2 hover:shadow-md transition-shadow duration-300">
+				<div class="flex items-center justify-between mb-4">
+					<h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider">Today's
+						Revenue</h3>
+					<span
+						class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-full">+12%</span>
+				</div>
+				<p class="text-5xl font-black text-slate-900 tracking-tight">₹{{ "%.2f"|format(revenue)
+					}}</p>
+			</div>
+
+			<div
+				class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-300 flex flex-col justify-between">
+				<h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Items in
+					Inventory</h3>
+				<p class="text-5xl font-black text-slate-900 tracking-tight">{{ count }}</p>
+				<a href="/inventory"
+					class="text-sm text-indigo-600 hover:text-indigo-800 hover:underline mt-4 inline-block font-semibold flex items-center">
+					Manage Stock <span
+						class="ml-1 transition-transform group-hover:translate-x-1">→</span>
+				</a>
+			</div>
+
+			<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 md:col-span-3 mt-4">
+				<h3 class="text-xl font-bold text-slate-900 mb-6">Recent Transactions</h3>
+
+				<div class="overflow-hidden rounded-xl border border-slate-100">
+					<table class="min-w-full divide-y divide-slate-100">
+						<thead class="bg-slate-50/50">
+							<tr>
+								<th
+									class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+									Items Sold</th>
+								<th
+									class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+									Status</th>
+								<th
+									class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+									Total Amount</th>
+							</tr>
+						</thead>
+						<tbody class="bg-white divide-y divide-slate-50">
+							{% if sales %}
+							{% for sale in sales %}
+							<tr class="hover:bg-slate-50/80 transition-colors duration-150">
+								<td
+									class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-700">
+									{{ sale.items }} units</td>
+								<td class="px-6 py-4 whitespace-nowrap">
+									<span
+										class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+										<svg class="-ml-0.5 mr-1.5 h-2 w-2 text-emerald-500"
+											fill="currentColor"
+											viewBox="0 0 8 8">
+											<circle cx="4" cy="4" r="3" />
+										</svg>
+										PAID
+									</span>
+								</td>
+								<td
+									class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-slate-900">
+									₹{{ "%.2f"|format(sale.total) }}</td>
+							</tr>
+							{% endfor %}
+							{% else %}
+							<tr>
+								<td colspan="3" class="px-6 py-16 text-center">
+									<p class="text-slate-400 font-medium">No sales
+										recorded yet.</p>
+									<p class="text-slate-300 text-sm mt-1">Start by
+										clicking "+ New Sale" above.</p>
+								</td>
+							</tr>
+							{% endif %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</main>
+</body>
+
+</html>
